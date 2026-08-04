@@ -28,11 +28,13 @@ pragma solidity ^0.8.30;
 
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatibleInterface.sol";
 
 error Raffle__NotEnoughFunds();
 error Raffle__NotTheWinner();
 error Raffle__SetTimeHasNotElapsed();
 error Raffle__PaymentFailed();
+error Raffle__RaffleHasClosed();
 
 
 /**
@@ -64,8 +66,10 @@ error Raffle__PaymentFailed();
     address public s_recentWinner;
     RaffleState private s_raffleState;
     
+    
 
     event PlayerAddedToRaffle(address indexed player);
+    event WinnerPicked(address indexed winner);
 
     constructor(uint256 _entranceFee,uint256 _subId,uint256 _timeInterval,address vrfCoordinator,bytes32 _gaslane,uint32 _callbackGasLimit)VRFConsumerBaseV2Plus(vrfCoordinator){
         i_entranceFee = _entranceFee;
@@ -74,10 +78,15 @@ error Raffle__PaymentFailed();
         i_subscriptionId = _subId;
         i_callbackGasLimit = _callbackGasLimit;
         s_lastTimeStamp = block.timestamp;
-        s_raffleState = RaffleState(0);
+        s_raffleState = RaffleState.OPEN;
+        
     }
 
     function enterRaffle() external payable{
+        if(s_raffleState != RaffleState.OPEN){
+            revert Raffle__RaffleHasClosed();
+        }
+
         if(msg.value < i_entranceFee){
             revert Raffle__NotEnoughFunds();
         }
@@ -89,7 +98,11 @@ error Raffle__PaymentFailed();
     function pickWinner() external {
         uint256 timeDifference = block.timestamp - s_lastTimeStamp;
 
-        if(timeDifference < i_lotteryTimeInterval) revert Raffle__SetTimeHasNotElapsed();
+        if(timeDifference < i_lotteryTimeInterval) {
+            revert Raffle__SetTimeHasNotElapsed();
+            }
+
+        s_raffleState = RaffleState.CLOSED;
 
     VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
             keyHash: i_keyHash,
@@ -107,11 +120,17 @@ error Raffle__PaymentFailed();
         uint256 winnerIndex = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[winnerIndex];
         s_recentWinner = recentWinner;
+        s_raffleState = RaffleState.OPEN;
+        s_players = new address payable[](0);
+        s_lastTimeStamp = block.timestamp;
+
+        emit WinnerPicked(recentWinner);
 
         (bool success,) = recentWinner.call{value: address(this).balance}("");
         if(!success) {
             revert Raffle__PaymentFailed();
         }
+
     }
 
     //111156905340625053542389350583940108777420172393988756622693613794872779825267 // subId
@@ -119,6 +138,10 @@ error Raffle__PaymentFailed();
     /*Getter functions*/
     function getEntranceFee() external view returns(uint256) {
         return i_entranceFee;
+    }
+
+    function getRecentWinner() external view returns(address) {
+        return s_recentWinner;
     }
 
  }
