@@ -49,15 +49,15 @@ error Raffle__SetTimeHasNotElapsed();
    // address private immutable i_vrfCoordinator;
     address payable[] s_players;
     uint256 private s_lastTimeStamp;
-    uint256 private s_subId;
+    uint256 private s_s_subscriptionId;
 
     event PlayerAddedToRaffle(address indexed player);
 
-    constructor(uint256 _entranceFee,uint256 _subId,uint256 _timeInterval)VRFConsumerBaseV2Plus(vrfCoordinator){
+    constructor(uint256 _entranceFee,uint256 _subId,uint256 _timeInterval,address vrfCoordinator)VRFConsumerBaseV2Plus(vrfCoordinator){
         i_entranceFee = _entranceFee;
         i_lotteryTimeInterval = _timeInterval;
         s_lastTimeStamp = block.timestamp;
-        s_subId = _subId;
+        s_s_subscriptionId = _subId;
     }
 
     function enterRaffle() external payable{
@@ -72,9 +72,9 @@ error Raffle__SetTimeHasNotElapsed();
     function pickWinner() external {
         if(block.timestamp - s_lastTimeStamp < i_lotteryTimeInterval) revert Raffle__SetTimeHasNotElapsed();
 
-        VRFV2PlusClient.requestRandomWords request = VRFV2PlusClient.requestRandomWords({
-            keyHash:s_keyHash,
-            subId:s_subscriptionId,
+        uint256 requestId = VRFV2PlusClient.requestRandomWords({
+            keyHash: s_keyHash,
+            subId: s_subscriptionId,
             requestConfirmations: requestConfirmations,
             callbackGasLimit: callbackGasLimit,
             numWords: numWords,
@@ -84,7 +84,7 @@ error Raffle__SetTimeHasNotElapsed();
 
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal virtual{}
 
-111156905340625053542389350583940108777420172393988756622693613794872779825267 // subId
+//111156905340625053542389350583940108777420172393988756622693613794872779825267 // subId
 
     /*Getter functions*/
     function getEntranceFee() external view returns(uint256) {
