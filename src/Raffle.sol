@@ -45,6 +45,11 @@ error Raffle__PaymentFailed();
 
  contract Raffle is VRFConsumerBaseV2Plus{
 
+    enum RaffleState{
+        OPEN,
+        CLOSED
+    }
+
     uint256 private immutable i_lotteryTimeInterval;
     uint256 private immutable i_entranceFee;
     uint256 private i_subscriptionId;
@@ -57,6 +62,7 @@ error Raffle__PaymentFailed();
     address payable[] s_players;
     uint256 private s_lastTimeStamp;
     address public s_recentWinner;
+    RaffleState private s_raffleState;
     
 
     event PlayerAddedToRaffle(address indexed player);
@@ -68,6 +74,7 @@ error Raffle__PaymentFailed();
         i_subscriptionId = _subId;
         i_callbackGasLimit = _callbackGasLimit;
         s_lastTimeStamp = block.timestamp;
+        s_raffleState = RaffleState(0);
     }
 
     function enterRaffle() external payable{
@@ -80,7 +87,9 @@ error Raffle__PaymentFailed();
     }
 
     function pickWinner() external {
-        if(block.timestamp - s_lastTimeStamp < i_lotteryTimeInterval) revert Raffle__SetTimeHasNotElapsed();
+        uint256 timeDifference = block.timestamp - s_lastTimeStamp;
+
+        if(timeDifference < i_lotteryTimeInterval) revert Raffle__SetTimeHasNotElapsed();
 
     VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
             keyHash: i_keyHash,
