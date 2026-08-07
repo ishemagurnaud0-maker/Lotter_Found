@@ -28,7 +28,7 @@ pragma solidity ^0.8.30;
 
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
-import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatibleInterface.sol";
+//import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 
 error Raffle__NotEnoughFunds();
 error Raffle__NotTheWinner();
@@ -95,13 +95,28 @@ error Raffle__RaffleHasClosed();
         emit PlayerAddedToRaffle(msg.sender);
     }
 
-    function pickWinner() external {
-        uint256 timeDifference = block.timestamp - s_lastTimeStamp;
+function checkUpKeep(bytes memory /*checkData*/ ) public view returns (bool upKeepNeeded, bytes memory /*checkData*/) {
+     uint256 timeDifference = block.timestamp - s_lastTimeStamp;
 
-        if(timeDifference < i_lotteryTimeInterval) {
+    bool timeHasElapsed = timeDifference > i_lotteryTimeInterval;
+    bool hasplayers = s_players.length > 0;
+    bool isOpen = s_raffleState == RaffleState.OPEN;
+    bool hasBalance = address(this).balance > 0;
+    upKeepNeeded = timeHasElapsed && hasplayers && isOpen && hasBalance;
+
+    return (upKeepNeeded, "0x0");
+}
+
+
+
+
+    function performUpkeep(bytes memory /*performData*/ ) external {
+        (bool upKeepNeeded,) = checkUpKeep("");
+
+        if(!upKeepNeeded){
             revert Raffle__SetTimeHasNotElapsed();
-            }
-
+        }
+ 
         s_raffleState = RaffleState.CLOSED;
 
     VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
@@ -113,10 +128,10 @@ error Raffle__RaffleHasClosed();
             extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
         });
 
-        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+         s_vrfCoordinator.requestRandomWords(request);
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override{
+    function fulfillRandomWords(uint256 /*requestId*/, uint256[] calldata randomWords) internal override{
         uint256 winnerIndex = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[winnerIndex];
         s_recentWinner = recentWinner;
