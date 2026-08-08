@@ -21,11 +21,11 @@ contract DeployRaffleScript is Script {
         vm.startBroadcast();
         Raffle raffle = new Raffle(entranceFee, subscriptionId, lotteryTimeInterval, vrfCoordinator, gaslane, callbackGasLimit);
         vm.stopBroadcast();
-        return raffle;
+        return (raffle, helperConfig);
     }
 
-    function run() public returns(Raffle) {
-        deployContract();
+    function run() public returns(Raffle,HelperConfig){
+       return deployContract();
     }
 
 }

@@ -3,16 +3,16 @@ pragma solidity ^0.8.30;
 
 
 import {Script, console} from "forge-std/Script.sol";
-import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/mocks/VRFCoordinatorV2_5Mock.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
     
 
     abstract contract VariableConstants {
         uint256 public constant SEPOLIA_CHAIN_ID = 11155111;
         uint256 public constant ANVIL_CHAIN_ID = 31337;
 
-        uint256 public constant MOCK_BASE_FEE = 0.25 ether;
-        uint256 public constant MOCK_GAS_PRICE_LINK = 1e9;
-        uint256 public constant MOCK_WEI_UNIT_LINK = 1e18;
+        uint96 public constant MOCK_BASE_FEE = 0.25 ether;
+        uint96 public constant MOCK_GAS_PRICE_LINK = 1e9;
+        int256 public constant MOCK_WEI_UNIT_LINK = 1e18;
     }
     
 
@@ -40,7 +40,7 @@ constructor() {
     networkConfigs[SEPOLIA_CHAIN_ID] = getSepoliaETHConfig();
 }
 
-function getConfigByChainId(uint256 chainId) public view returns(NetworkConfig memory) {
+function getConfigByChainId(uint256 chainId) public returns(NetworkConfig memory) {
     if (networkConfigs[chainId].vrfCoordinator != address(0)) {
         return networkConfigs[chainId];
     } else if (chainId == ANVIL_CHAIN_ID) {
@@ -61,7 +61,7 @@ function getConfigByChainId(uint256 chainId) public view returns(NetworkConfig m
         });
     }
 
-    function getLocalChainConfig() public  returns(NetworkConfig memory) {
+    function getLocalChainConfig() public returns(NetworkConfig memory) {
         if(localNetworkConfig.vrfCoordinator != address(0)){
             return localNetworkConfig;
         }
@@ -83,7 +83,11 @@ function getConfigByChainId(uint256 chainId) public view returns(NetworkConfig m
 
     }
 
-function getConfig() external view returns(NetworkConfig memory) {
+function getConfig() external returns(NetworkConfig memory) {
     return getConfigByChainId(block.chainid);
+    }
+
+    function getRaffleState() external view returns(RaffleState) {
+        return s_raffleState;
     }
 } 
