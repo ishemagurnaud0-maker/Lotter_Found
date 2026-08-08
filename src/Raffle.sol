@@ -161,6 +161,10 @@ function checkUpKeep(bytes memory /*checkData*/ ) public view returns (bool upKe
         return s_recentWinner;
     }
 
+    function getPlayer(uint256 index) external view returns(address) {
+        return s_players[index];
+    }
+
  }
 
 
