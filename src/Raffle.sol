@@ -30,11 +30,7 @@ import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFCo
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 //import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 
-error Raffle__NotEnoughFunds();
-error Raffle__NotTheWinner();
-error Raffle__SetTimeHasNotElapsed();
-error Raffle__PaymentFailed();
-error Raffle__RaffleHasClosed();
+
 
 
 /**
@@ -46,6 +42,12 @@ error Raffle__RaffleHasClosed();
 
 
  contract Raffle is VRFConsumerBaseV2Plus{
+
+error Raffle__NotEnoughFunds();
+error Raffle__NotTheWinner();
+error Raffle__SetTimeHasNotElapsed();
+error Raffle__PaymentFailed();
+error Raffle__RaffleHasClosed();
 
     enum RaffleState{
         OPEN,
