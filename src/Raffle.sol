@@ -97,7 +97,7 @@ error Raffle__RaffleHasClosed();
         emit PlayerAddedToRaffle(msg.sender);
     }
 
-function checkUpKeep(bytes memory /*checkData*/ ) public view returns (bool upKeepNeeded, bytes memory /*checkData*/) {
+function checkUpKeep(bytes memory /*checkData*/ ) external view returns (bool upKeepNeeded, bytes memory /*checkData*/) {
      uint256 timeDifference = block.timestamp - s_lastTimeStamp;
 
     bool timeHasElapsed = timeDifference > i_lotteryTimeInterval;
@@ -163,6 +163,10 @@ function checkUpKeep(bytes memory /*checkData*/ ) public view returns (bool upKe
 
     function getPlayer(uint256 index) external view returns(address) {
         return s_players[index];
+    }
+
+    function getRaffleState() external view returns(RaffleState) {
+        return s_raffleState;
     }
 
  }
