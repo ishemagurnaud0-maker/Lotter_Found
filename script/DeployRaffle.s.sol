@@ -5,9 +5,8 @@ import {Script, console} from "forge-std/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
-
 contract DeployRaffleScript is Script {
-    function deployContract() public returns(Raffle, HelperConfig) {
+    function deployContract() public returns (Raffle, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
 
@@ -19,13 +18,13 @@ contract DeployRaffleScript is Script {
         address vrfCoordinator = config.vrfCoordinator;
 
         vm.startBroadcast();
-        Raffle raffle = new Raffle(entranceFee, subscriptionId, lotteryTimeInterval, vrfCoordinator, gaslane, callbackGasLimit);
+        Raffle raffle =
+            new Raffle(entranceFee, subscriptionId, lotteryTimeInterval, vrfCoordinator, gaslane, callbackGasLimit);
         vm.stopBroadcast();
         return (raffle, helperConfig);
     }
 
-    function run() public returns(Raffle,HelperConfig){
-       return deployContract();
+    function run() public returns (Raffle, HelperConfig) {
+        return deployContract();
     }
-
 }
