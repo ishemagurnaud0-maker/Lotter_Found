@@ -97,7 +97,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     function checkUpKeep(
         bytes memory /*checkData*/
     )
-        external
+        public
         view
         returns (
             bool upKeepNeeded,
