@@ -36,7 +36,15 @@ contract TestRaffle is Test {
         vm.deal(PLAYER, STARTING_USER_BALANCE);
     }
 
-    
+    function testRaffleInitializeOpenState() public view {
+        assert(raffle.getRaffleState() == Raffle.RaffleState.OPEN);
+    }
+
+    function testEnterRaffleEntranceReverts() public {
+        vm.prank(PLAYER);
+        vm.expectRevert(Raffle.Raffle__NotEnoughFunds.selector);
+        raffle.enterRaffle{value: 0.001 ether}();
+    }
 
     function testEnterRaffle() public {
         vm.prank(PLAYER);
@@ -44,6 +52,4 @@ contract TestRaffle is Test {
         address player = raffle.getPlayer(0);
         assertEq(player, PLAYER);
     }
-
-
 }
