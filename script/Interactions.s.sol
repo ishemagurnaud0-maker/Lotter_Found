@@ -39,11 +39,11 @@ contract FundSubscription is Script {
             uint256 subId = config.subscriptionId;
             address link = config.link;
 
-            fundSubscription(subId, vrfCoordinator, link);\
+            fundSubscription(subId, vrfCoordinator, link);
     
     }
 
-    function fundSubscription(uint256 subId, address vrfCoordinator, address link) internal {
+    function fundSubscription(uint256 subId, address vrfCoordinator, address link) public {
         if(block.chainid == LOCAL_CHAIN_ID) {
             vm.startBroadcast();
             VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(subId, FUND_AMOUNT);
@@ -79,7 +79,7 @@ function addConsumerUsingConfig(address consumerAddress) internal {
     function addConsumer(uint256 subId, address consumerAddress, address vrfCoordinator) public {
         
        vm.startBroadcast();
-        VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(subId, consumerAddress,vrfCoordinator);
+        VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(subId, consumerAddress);
         vm.stopBroadcast();
     }
 
@@ -90,4 +90,3 @@ function addConsumerUsingConfig(address consumerAddress) internal {
     }
 }
 
-}

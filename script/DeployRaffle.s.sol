@@ -5,7 +5,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 import {SubscriptionManager, FundSubscription, AddConsumer} from "./Interactions.s.sol";
-import 
+
 
 contract DeployRaffleScript is Script {
     function deployContract() public returns (Raffle, HelperConfig) {
@@ -22,7 +22,7 @@ contract DeployRaffleScript is Script {
 
         if(subscriptionId == 0) {
             SubscriptionManager subscriptionManager = new SubscriptionManager();
-            (subscriptionId,) = subscriptionManager.createSubscription();
+            (subscriptionId,vrfCoordinator) = subscriptionManager.createSubscription();
 
             FundSubscription fundSubscription = new FundSubscription();
             fundSubscription.fundSubscription(subscriptionId, vrfCoordinator, link);
