@@ -59,8 +59,7 @@ contract HelperConfig is VariableConstants, Script {
         }
 
         vm.startBroadcast();
-        VRFCoordinatorV2_5Mock vrfCoordinator =
-            new VRFCoordinatorV2_5Mock(MOCK_BASE_FEE, MOCK_GAS_PRICE_LINK, MOCK_WEI_UNIT_LINK);
+        VRFCoordinatorV2_5Mock vrfCoordinator = new VRFCoordinatorV2_5Mock(MOCK_BASE_FEE, MOCK_GAS_PRICE_LINK, MOCK_WEI_UNIT_LINK);
         vm.stopBroadcast();
 
         localNetworkConfig = NetworkConfig({
