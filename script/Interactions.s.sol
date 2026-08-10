@@ -18,10 +18,24 @@ function createSubscription() private returns(uint256){
     vm.startBroadcast();
     uint256 subId = VRFCoordinatorV2_5Mock(vrfCoordinator).createSubscription();
     vm.stopBroadcast();
-    return subId;
+    return (subId, vrfCoordinator);
 }
 
-    function run() external  returns(uint256){
-        return createSubscription();
+    function run() external {
+         createSubscription();
+    }
+}
+
+
+contract FundSubscription is Script {
+
+    uint256 public constant FUND_AMOUNT = 0.01 ether;
+
+        function fundSubscriptionUsingConfig() internal {
+            HelperConfig helperConfig = new HelperConfig();
+            HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
+            address vrfCoordinator = config.vrfCoordinator;
+            uint256 subId = config.subscriptionId;
+
     }
 }

@@ -15,12 +15,12 @@ contract DeployRaffleScript is Script {
         uint256 lotteryTimeInterval = config.lotteryTimeInterval;
         uint256 subscriptionId = config.subscriptionId;
         bytes32 gaslane = config.gaslane;
-        uint32 callbackGasLimit = config.callbackGasLimit;
+       uint32 callbackGasLimit = config.callbackGasLimit;
         address vrfCoordinator = config.vrfCoordinator;
 
         if(subscriptionId == 0) {
             SubscriptionManager subscriptionManager = new SubscriptionManager();
-            subscriptionId = subscriptionManager.run();
+            (subscriptionId,) = subscriptionManager.createSubscription();
         }
 
         vm.startBroadcast();
