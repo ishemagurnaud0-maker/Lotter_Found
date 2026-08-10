@@ -1,4 +1,3 @@
-//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
 
@@ -67,19 +66,28 @@ contract FundSubscription is Script {
 
 contract AddConsumer is Script {
 
+function addConsumerUsingConfig(address consumerAddress) internal {
     HelperConfig helperConfig = new HelperConfig();
     HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
+    address vrfCoordinator = config.vrfCoordinator;
+    uint256 subId = config.subscriptionId;
 
-    function addConsumer(uint256 subId, address consumerAddress) public {
-        address vrfCoordinator = config.vrfCoordinator;
-        vm.startBroadcast();
-        VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(subId, consumerAddress);
+    addConsumer(subId, consumerAddress, vrfCoordinator);
+
+}
+
+    function addConsumer(uint256 subId, address consumerAddress, address vrfCoordinator) public {
+        
+       vm.startBroadcast();
+        VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(subId, consumerAddress,vrfCoordinator);
         vm.stopBroadcast();
     }
 
     function run() external {
         address consumerAddress = DevOpsTools.get_most_recent_deployment("Raffle", block.chainid);
-        addConsumer(config.subscriptionId, consumerAddress);
+        addConsumerUsingConfig(consumerAddress);
 
     }
+}
+
 }
