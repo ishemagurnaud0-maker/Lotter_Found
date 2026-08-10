@@ -63,6 +63,20 @@ contract TestRaffle is Test {
         raffle.enterRaffle{value: entranceFee}();
     }
 
+    function testPlayersCannotEnterRaffleWhileCalculatingWinner() external {
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        vm.warp(block.timestamp + lotteryTimeInterval + 1);
+        vm.roll(block.number + 1);
+
+        raffle.performUpkeep("");
+
+        vm.prank(PLAYER);
+        vm.expectRevert(Raffle.Raffle__RaffleHasClosed.selector);
+        raffle.enterRaffle{value: entranceFee}();
+
+    }
+
     function testEnterRaffle() external {
         vm.prank(PLAYER);
         raffle.enterRaffle{value: entranceFee}();

@@ -4,6 +4,7 @@ pragma solidity ^0.8.30;
 import {Script, console} from "forge-std/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
+import {SubscriptionManager} from "./Interactions.s.sol";
 
 contract DeployRaffleScript is Script {
     function deployContract() public returns (Raffle, HelperConfig) {
@@ -14,12 +15,16 @@ contract DeployRaffleScript is Script {
         uint256 lotteryTimeInterval = config.lotteryTimeInterval;
         uint256 subscriptionId = config.subscriptionId;
         bytes32 gaslane = config.gaslane;
-        uint32 callbackGasLimit = config.callbackGasLimit;
+       uint32 callbackGasLimit = config.callbackGasLimit;
         address vrfCoordinator = config.vrfCoordinator;
 
+        if(subscriptionId == 0) {
+            SubscriptionManager subscriptionManager = new SubscriptionManager();
+            (subscriptionId,) = subscriptionManager.createSubscription();
+        }
+
         vm.startBroadcast();
-        Raffle raffle =
-            new Raffle(entranceFee, subscriptionId, lotteryTimeInterval, vrfCoordinator, gaslane, callbackGasLimit);
+        Raffle raffle = new Raffle(entranceFee, subscriptionId, lotteryTimeInterval, vrfCoordinator, gaslane, callbackGasLimit);
         vm.stopBroadcast();
         return (raffle, helperConfig);
     }
