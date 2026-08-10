@@ -5,6 +5,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 import {SubscriptionManager} from "./Interactions.s.sol";
+import {FundSubscription} from "./Interactions.s.sol";
 
 contract DeployRaffleScript is Script {
     function deployContract() public returns (Raffle, HelperConfig) {
@@ -17,10 +18,14 @@ contract DeployRaffleScript is Script {
         bytes32 gaslane = config.gaslane;
        uint32 callbackGasLimit = config.callbackGasLimit;
         address vrfCoordinator = config.vrfCoordinator;
+        address link = config.link;
 
         if(subscriptionId == 0) {
             SubscriptionManager subscriptionManager = new SubscriptionManager();
             (subscriptionId,) = subscriptionManager.createSubscription();
+
+            FundSubscription fundSubscription = new FundSubscription();
+            fundSubscription.fundSubscription(subscriptionId, vrfCoordinator, link);
         }
 
         vm.startBroadcast();
