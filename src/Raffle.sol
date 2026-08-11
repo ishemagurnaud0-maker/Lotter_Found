@@ -107,10 +107,10 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256 timeDifference = block.timestamp - s_lastTimeStamp;
 
         bool timeHasElapsed = timeDifference > i_lotteryTimeInterval;
-        bool hasplayers = s_players.length > 0;
+        bool hasPlayers = s_players.length > 0;
         bool isOpen = s_raffleState == RaffleState.OPEN;
         bool hasBalance = address(this).balance > 0;
-        upKeepNeeded = timeHasElapsed && hasplayers && isOpen && hasBalance;
+        upKeepNeeded = timeHasElapsed && hasPlayers && isOpen && hasBalance;
 
         return (upKeepNeeded, "0x0");
     }
