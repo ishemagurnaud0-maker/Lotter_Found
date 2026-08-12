@@ -175,6 +175,7 @@ modifier raffleEntered() {
     function testFullFillRandomWordsPicksWinnerResetsRaffleStateAndSendsMoney() external raffleEntered {
         uint256 startingIndex = 1;
         uint256 newPlayers = 3;
+        address expectedWinner = address(1);
 
         for(uint256 i = startingIndex; i < startingIndex + newPlayers; i++) {
             address newPlayer = address(uint180(i));
@@ -182,7 +183,23 @@ modifier raffleEntered() {
             raffle.enterRaffle{value: entranceFee}();
         }
 
+        uint256 lastTimeStamp = raffle.getLastTimeStamp();
+        uint256 winnerStartingBalance = expectedWinner.balance;
+
+        vm.recordLogs();
         raffle.performUpkeep("");
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        bytes32 requestId = entries[1].topics[1];
+
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(raffle));
+
+        address recentWinner = raffle.getRecentWinner();
+        Raffle.RaffleState raffleState = raffle.getRaffleState(); 
+        uint256 winnerBalance = raffle.getWinnerBalance();
+        uint256 prize = entranceFee * (newPlayers + 1);
         
+        assert(raffleState == Raffle.RaffleState.OPEN);
+        assert(winnerBalance == winnerStartingBalance + prize);
+        assert(recentWinner == expectedWinner);
     }
 }
