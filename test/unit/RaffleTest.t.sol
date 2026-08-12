@@ -60,7 +60,7 @@ modifier raffleEntered() {
         vm.prank(PLAYER1);
         raffle.enterRaffle{value: entranceFee}();
         address playerRecorded = raffle.getPlayer(0);
-        assert(playerRecorded == PLAYER);
+        assert(playerRecorded == PLAYER1);
     }
 
     function testEnterRaffleEntranceReverts() public {
@@ -70,21 +70,16 @@ modifier raffleEntered() {
     }
 
     function testRaffleEmitsEventOnEntrance() external {
-        vm.prank(PLAYER11);
+        vm.prank(PLAYER1);
         vm.expectEmit(true, false, false, false,address(raffle));
-        emit Raffle.PlayerAddedToRaffle(PLAYER);
+        emit Raffle.PlayerAddedToRaffle(PLAYER1);
         raffle.enterRaffle{value: entranceFee}();
     }
 
-    function testPlayersCannotEnterRaffleWhileCalculatingWinner() external {
+    function testPlayersCannotEnterRaffleWhileCalculatingWinner() external raffleEntered{
+       raffle.performUpkeep("");
+
         vm.prank(PLAYER1);
-        raffle.enterRaffle{value: entranceFee}();
-        vm.warp(block.timestamp + lotteryTimeInterval + 1);
-        vm.roll(block.number + 1);
-
-        raffle.performUpkeep("");
-
-        vm.prank(PLAYER);
         vm.expectRevert(Raffle.Raffle__RaffleHasClosed.selector);
         raffle.enterRaffle{value: entranceFee}();
 
@@ -100,12 +95,7 @@ modifier raffleEntered() {
         
     }
 
-    function testCheckUpkeepReturnsFalseWhenRaffleIsClosed() external {
-
-        vm.prank(PLAYER1);
-        raffle.enterRaffle{value: entranceFee}();
-        vm.warp(block.timestamp + lotteryTimeInterval + 1);
-        vm.roll(block.number + 1);
+    function testCheckUpkeepReturnsFalseWhenRaffleIsClosed() external raffleEntered(){
 
         raffle.performUpkeep("");
 
@@ -114,12 +104,7 @@ modifier raffleEntered() {
     }
 
 
-    function testCheckUpKeepReturnsTrueWhenAllConditionsAreMet() external {
-        vm.prank(PLAYER1);
-        raffle.enterRaffle{value: entranceFee}();
-        vm.warp(block.timestamp + lotteryTimeInterval + 1);
-        vm.roll(block.number + 1);
-
+    function testCheckUpKeepReturnsTrueWhenAllConditionsAreMet() external raffleEntered(){
         (bool upkeepNeeded, ) = raffle.checkUpKeep("");
         assert(upkeepNeeded);
     }
@@ -127,14 +112,11 @@ modifier raffleEntered() {
         vm.prank(PLAYER1);
         raffle.enterRaffle{value: entranceFee}();
         address player = raffle.getPlayer(0);
-        assertEq(player, PLAYER);
+        assertEq(player, PLAYER1);
     }
 
-    function testPerformUpkeepCanOnlyRunWhenCheckUpkeepIsTrue() external {
-            vm.prank(PLAYER1);
-            raffle.enterRaffle{value: entranceFee}();
-            vm.warp(block.timestamp + lotteryTimeInterval + 1);
-            vm.roll(block.number + 1);
+    function testPerformUpkeepCanOnlyRunWhenCheckUpkeepIsTrue() external raffleEntered{
+           
 
             raffle.performUpkeep("");
     }
@@ -150,13 +132,9 @@ modifier raffleEntered() {
 
     }
 
-    function testPerformUpkeepUpdatesRaffleStateAndEmitsRequest() external {
-        vm.prank(PLAYER1);
-        raffle.enterRaffle{value: entranceFee}();
-        vm.warp(block.timestamp + lotteryTimeInterval + 1);
-        vm.roll(block.number + 1);
-
-        vm.recordLogs();
+    function testPerformUpkeepUpdatesRaffleStateAndEmitsRequest() external raffleEntered(){
+        
+         vm.recordLogs();
         raffle.performUpkeep("");
         Vm.Log[] memory entries = vm.getRecordedLogs();
         bytes32 requestId = entries[1].topics[1];
@@ -178,12 +156,12 @@ modifier raffleEntered() {
         address expectedWinner = address(1);
 
         for(uint256 i = startingIndex; i < startingIndex + newPlayers; i++) {
-            address newPlayer = address(uint180(i));
-            vm.hoax(newPlayer,STARTING_USER_BALANCE);
+            address newPlayer = address(uint160(i));
+            hoax(newPlayer,STARTING_USER_BALANCE);
             raffle.enterRaffle{value: entranceFee}();
         }
 
-        uint256 lastTimeStamp = raffle.getLastTimeStamp();
+        
         uint256 winnerStartingBalance = expectedWinner.balance;
 
         vm.recordLogs();
