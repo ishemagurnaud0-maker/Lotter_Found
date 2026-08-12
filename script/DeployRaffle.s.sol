@@ -20,14 +20,14 @@ contract DeployRaffleScript is Script {
         address vrfCoordinator = config.vrfCoordinator;
         address link = config.link;
 
-        if(subscriptionId == 0) {
+        if (subscriptionId == 0) {
             SubscriptionManager subscriptionManager = new SubscriptionManager();
-            (subscriptionId,vrfCoordinator) = subscriptionManager.createSubscription();
+            uint256 _subId = subscriptionManager.createSubscription(vrfCoordinator);
+            subscriptionId = _subId;
+            helperConfig.updateSubscriptionId(subscriptionId);
 
             FundSubscription fundSubscription = new FundSubscription();
             fundSubscription.fundSubscription(subscriptionId, vrfCoordinator, link);
-
-            
         }
 
         vm.startBroadcast();

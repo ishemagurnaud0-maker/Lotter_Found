@@ -5,6 +5,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 import {LinkToken} from "../test/mocks/LinkToken.sol";
 
+
 abstract contract VariableConstants {
     uint256 public constant SEPOLIA_CHAIN_ID = 11155111;
     uint256 public constant ANVIL_CHAIN_ID = 31337;
@@ -77,6 +78,10 @@ contract HelperConfig is VariableConstants, Script {
         });
 
         return localNetworkConfig;
+    }
+
+    function updateSubscriptionId(uint256 newSubscriptionId) external {
+        localNetworkConfig.subscriptionId = newSubscriptionId;
     }
 
     function getConfig() external returns (NetworkConfig memory) {

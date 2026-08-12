@@ -168,8 +168,12 @@ modifier raffleEntered() {
         raffle.performUpkeep("");
         Vm.Log[] memory entries = vm.getRecordedLogs();
         bytes32 requestId = entries[1].topics[1];
+        console.log("requestId:", uint256(requestId));
+        console.log("vrfCoordinator:", vrfCoordinator);
+        console.log("subId:",subscriptionId);
 
         VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(raffle));
+        
 
         address recentWinner = raffle.getRecentWinner();
         Raffle.RaffleState raffleState = raffle.getRaffleState(); 
