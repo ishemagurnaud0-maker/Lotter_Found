@@ -19,7 +19,8 @@ contract TestRaffle is Test {
     uint32 callbackGasLimit;
     address vrfCoordinator;
 
-    address public PLAYER = makeAddr("PLAYER");
+    address public PLAYER1 = makeAddr("PLAYER1");
+    address public PLAYER2 = makeAddr("PLAYER2");
     uint256 public constant STARTING_USER_BALANCE = 10 ether;
 
     event PlayerAddedToRaffle(address indexed player);
@@ -28,7 +29,7 @@ contract TestRaffle is Test {
 
 
 modifier raffleEntered() {
-    vm.prank(PLAYER);
+    vm.prank(PLAYER1);
     raffle.enterRaffle{value: entranceFee}();
     vm.warp(block.timestamp + lotteryTimeInterval + 1);
     vm.roll(block.number + 1);
@@ -48,7 +49,7 @@ modifier raffleEntered() {
         callbackGasLimit = config.callbackGasLimit;
         vrfCoordinator = config.vrfCoordinator;
 
-        vm.deal(PLAYER, STARTING_USER_BALANCE);
+        vm.deal(PLAYER1, STARTING_USER_BALANCE);
     }
 
     function testRaffleInitializeOpenState() public view {
@@ -56,27 +57,27 @@ modifier raffleEntered() {
     }
 
     function testRaffleRecordsPlayersWhenTheyEnter() public {
-        vm.prank(PLAYER);
+        vm.prank(PLAYER1);
         raffle.enterRaffle{value: entranceFee}();
         address playerRecorded = raffle.getPlayer(0);
         assert(playerRecorded == PLAYER);
     }
 
     function testEnterRaffleEntranceReverts() public {
-        vm.prank(PLAYER);
+        vm.prank(PLAYER1);
         vm.expectRevert(Raffle.Raffle__NotEnoughFunds.selector);
         raffle.enterRaffle{value: 0.001 ether}();
     }
 
     function testRaffleEmitsEventOnEntrance() external {
-        vm.prank(PLAYER);
+        vm.prank(PLAYER11);
         vm.expectEmit(true, false, false, false,address(raffle));
         emit Raffle.PlayerAddedToRaffle(PLAYER);
         raffle.enterRaffle{value: entranceFee}();
     }
 
     function testPlayersCannotEnterRaffleWhileCalculatingWinner() external {
-        vm.prank(PLAYER);
+        vm.prank(PLAYER1);
         raffle.enterRaffle{value: entranceFee}();
         vm.warp(block.timestamp + lotteryTimeInterval + 1);
         vm.roll(block.number + 1);
@@ -101,7 +102,7 @@ modifier raffleEntered() {
 
     function testCheckUpkeepReturnsFalseWhenRaffleIsClosed() external {
 
-        vm.prank(PLAYER);
+        vm.prank(PLAYER1);
         raffle.enterRaffle{value: entranceFee}();
         vm.warp(block.timestamp + lotteryTimeInterval + 1);
         vm.roll(block.number + 1);
@@ -114,7 +115,7 @@ modifier raffleEntered() {
 
 
     function testCheckUpKeepReturnsTrueWhenAllConditionsAreMet() external {
-        vm.prank(PLAYER);
+        vm.prank(PLAYER1);
         raffle.enterRaffle{value: entranceFee}();
         vm.warp(block.timestamp + lotteryTimeInterval + 1);
         vm.roll(block.number + 1);
@@ -123,14 +124,14 @@ modifier raffleEntered() {
         assert(upkeepNeeded);
     }
     function testEnterRaffle() external {
-        vm.prank(PLAYER);
+        vm.prank(PLAYER1);
         raffle.enterRaffle{value: entranceFee}();
         address player = raffle.getPlayer(0);
         assertEq(player, PLAYER);
     }
 
     function testPerformUpkeepCanOnlyRunWhenCheckUpkeepIsTrue() external {
-            vm.prank(PLAYER);
+            vm.prank(PLAYER1);
             raffle.enterRaffle{value: entranceFee}();
             vm.warp(block.timestamp + lotteryTimeInterval + 1);
             vm.roll(block.number + 1);
@@ -141,7 +142,7 @@ modifier raffleEntered() {
 
 
     function testPerformRevertsWhenCheckUpkeepReturnsFalse() external {
-        vm.prank(PLAYER);
+        vm.prank(PLAYER1);
         raffle.enterRaffle{value: entranceFee}();
         
         vm.expectRevert(Raffle.Raffle__UpkeepNotNeeded.selector);
@@ -150,7 +151,7 @@ modifier raffleEntered() {
     }
 
     function testPerformUpkeepUpdatesRaffleStateAndEmitsRequest() external {
-        vm.prank(PLAYER);
+        vm.prank(PLAYER1);
         raffle.enterRaffle{value: entranceFee}();
         vm.warp(block.timestamp + lotteryTimeInterval + 1);
         vm.roll(block.number + 1);
@@ -166,9 +167,22 @@ modifier raffleEntered() {
 
     }
 
-    function testFullFillWordsOnlyRunsWhenPerformUpkeepHasRan() external raffleEntered{
+    function testFullFillWordsOnlyRunsWhenPerformUpkeepHasRan(uint256 randomRequestId) external raffleEntered{
        vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
-       VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(0, address(raffle));
+       VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(randomRequestId, address(raffle));
     }
 
+    function testFullFillRandomWordsPicksWinnerResetsRaffleStateAndSendsMoney() external raffleEntered {
+        uint256 startingIndex = 1;
+        uint256 newPlayers = 3;
+
+        for(uint256 i = startingIndex; i < startingIndex + newPlayers; i++) {
+            address newPlayer = address(uint180(i));
+            vm.hoax(newPlayer,STARTING_USER_BALANCE);
+            raffle.enterRaffle{value: entranceFee}();
+        }
+
+        raffle.performUpkeep("");
+        
+    }
 }
