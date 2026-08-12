@@ -38,7 +38,7 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
 contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle__NotEnoughFunds();
     error Raffle__NotTheWinner();
-    error Raffle__SetTimeHasNotElapsed();
+    error Raffle__UpkeepNotNeeded();
     error Raffle__PaymentFailed();
     error Raffle__RaffleHasClosed();
 
@@ -59,10 +59,12 @@ contract Raffle is VRFConsumerBaseV2Plus {
     address payable[] s_players;
     uint256 private s_lastTimeStamp;
     address public s_recentWinner;
+    
     RaffleState private s_raffleState;
 
     event PlayerAddedToRaffle(address indexed player);
     event WinnerPicked(address indexed winner);
+    event RequestSentToVrfCoordinator(uint256 indexed requestId);
 
     constructor(
         uint256 _entranceFee,
@@ -123,7 +125,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         (bool upKeepNeeded,) = checkUpKeep("");
 
         if (!upKeepNeeded) {
-            revert Raffle__SetTimeHasNotElapsed();
+            revert Raffle__UpkeepNotNeeded();
         }
 
         s_raffleState = RaffleState.CLOSED;
@@ -137,7 +139,9 @@ contract Raffle is VRFConsumerBaseV2Plus {
             extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
         });
 
-        s_vrfCoordinator.requestRandomWords(request);
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+
+       emit RequestSentToVrfCoordinator(requestId);
     }
 
     function fulfillRandomWords(
@@ -181,5 +185,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     function getRaffleState() external view returns (RaffleState) {
         return s_raffleState;
     }
+
+  
 }
 

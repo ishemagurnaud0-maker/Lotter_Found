@@ -5,6 +5,8 @@ import {Test, console} from "forge-std/Test.sol";
 import {Raffle} from "../../src/Raffle.sol";
 import {DeployRaffleScript} from "../../script/DeployRaffle.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {Vm} from "forge-std/Vm.sol";
 
 contract TestRaffle is Test {
     Raffle public raffle;
@@ -22,6 +24,16 @@ contract TestRaffle is Test {
 
     event PlayerAddedToRaffle(address indexed player);
     event WinnerPicked(address indexed winner);
+    event RequestSentToVrfCoordinator(uint256 indexed requestId);
+
+
+modifier raffleEntered() {
+    vm.prank(PLAYER);
+    raffle.enterRaffle{value: entranceFee}();
+    vm.warp(block.timestamp + lotteryTimeInterval + 1);
+    vm.roll(block.number + 1);
+    _;
+}
 
     function setUp() external {
         DeployRaffleScript deployer = new DeployRaffleScript();
@@ -123,10 +135,40 @@ contract TestRaffle is Test {
             vm.warp(block.timestamp + lotteryTimeInterval + 1);
             vm.roll(block.number + 1);
 
-            (bool upKeepNeeded, ) = raffle.checkUpKeep("");
-
-            raffle.performUpkeep("");   
-
-            assert(upKeepNeeded);
+            raffle.performUpkeep("");
     }
+
+
+
+    function testPerformRevertsWhenCheckUpkeepReturnsFalse() external {
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        
+        vm.expectRevert(Raffle.Raffle__UpkeepNotNeeded.selector);
+        raffle.performUpkeep("");
+
+    }
+
+    function testPerformUpkeepUpdatesRaffleStateAndEmitsRequest() external {
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        vm.warp(block.timestamp + lotteryTimeInterval + 1);
+        vm.roll(block.number + 1);
+
+        vm.recordLogs();
+        raffle.performUpkeep("");
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        bytes32 requestId = entries[1].topics[1];
+
+        assert(uint256(requestId) > 0);
+        assert(raffle.getRaffleState() == Raffle.RaffleState.CLOSED);
+
+
+    }
+
+    function testFullFillWordsOnlyRunsWhenPerformUpkeepHasRan() external raffleEntered{
+       vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
+       VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(0, address(raffle));
+    }
+
 }
