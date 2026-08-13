@@ -4,11 +4,11 @@ pragma solidity ^0.8.30;
 import {Test, console} from "forge-std/Test.sol";
 import {Raffle} from "../../src/Raffle.sol";
 import {DeployRaffleScript} from "../../script/DeployRaffle.s.sol";
-import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {HelperConfig, VariableConstants} from "../../script/HelperConfig.s.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 import {Vm} from "forge-std/Vm.sol";
 
-contract TestRaffle is Test {
+contract TestRaffle is Test, VariableConstants {
     Raffle public raffle;
     HelperConfig public helperConfig;
 
@@ -36,6 +36,12 @@ modifier raffleEntered() {
     _;
 }
 
+modifier skipForking() {
+    if(block.chainid == LOCAL_CHAIN_ID){
+        return;
+    }
+    _;
+}
 
     function setUp() external {
         DeployRaffleScript deployer = new DeployRaffleScript();
@@ -146,12 +152,12 @@ modifier raffleEntered() {
 
     }
 
-    function testFullFillWordsOnlyRunsWhenPerformUpkeepHasRan(uint256 randomRequestId) external raffleEntered{
+    function testFullFillWordsOnlyRunsWhenPerformUpkeepHasRan(uint256 randomRequestId) external raffleEntered skipForking{
        vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(randomRequestId, address(raffle));
     }
 
-    function testFullFillRandomWordsPicksWinnerResetsRaffleStateAndSendsMoney() external raffleEntered {
+    function testFullFillRandomWordsPicksWinnerResetsRaffleStateAndSendsMoney() external raffleEntered skipForking{
         uint256 startingIndex = 1;
         uint256 newPlayers = 3;
         address expectedWinner = address(1);

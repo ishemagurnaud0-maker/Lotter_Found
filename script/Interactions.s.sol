@@ -50,16 +50,16 @@ contract FundSubscription is Script {
 
 contract AddConsumer is Script {
 
-    function addConsumer(uint256 subId, address consumerAddress, address vrfCoordinator, address account) public {
-        
-         (,, address owner,,) = VRFCoordinatorV2_5Mock(vrfCoordinator).getSubscription(subId);
+    function addConsumer(uint256 subId, address consumerAddress, address vrfCoordinator) public {
+         
+         ( ,,, address owner,) = VRFCoordinatorV2_5Mock(vrfCoordinator).getSubscription(subId);
          vm.startBroadcast(owner);
          VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(subId, consumerAddress);
          vm.stopBroadcast();
     }
 
-    function run(uint256 subId, address consumerAddress, address vrfCoordinator, address account) external {
-        addConsumer(subId, consumerAddress, vrfCoordinator,account);
+    function run(uint256 subId, address consumerAddress, address vrfCoordinator) external {
+        addConsumer(subId, consumerAddress, vrfCoordinator);
     }
 }
 
