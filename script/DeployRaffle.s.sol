@@ -19,23 +19,24 @@ contract DeployRaffleScript is Script {
        uint32 callbackGasLimit = config.callbackGasLimit;
         address vrfCoordinator = config.vrfCoordinator;
         address link = config.link;
+        address account = config.account;
 
         if (subscriptionId == 0) {
             SubscriptionManager subscriptionManager = new SubscriptionManager();
-            uint256 _subId = subscriptionManager.createSubscription(vrfCoordinator);
+            uint256 _subId = subscriptionManager.createSubscription(vrfCoordinator,account);
             subscriptionId = _subId;
             helperConfig.updateSubscriptionId(subscriptionId);
 
             FundSubscription fundSubscription = new FundSubscription();
-            fundSubscription.fundSubscription(subscriptionId, vrfCoordinator, link);
+            fundSubscription.fundSubscription(subscriptionId, vrfCoordinator, link, account);
         }
 
-        vm.startBroadcast();
+        vm.startBroadcast(account);
         Raffle raffle = new Raffle(entranceFee, subscriptionId, lotteryTimeInterval, vrfCoordinator, gaslane, callbackGasLimit);
         vm.stopBroadcast();
 
         AddConsumer addConsumer = new AddConsumer();
-        addConsumer.addConsumer(subscriptionId, address(raffle), vrfCoordinator);
+        addConsumer.addConsumer(subscriptionId, address(raffle), vrfCoordinator, account);
 
         return (raffle, helperConfig);
     }

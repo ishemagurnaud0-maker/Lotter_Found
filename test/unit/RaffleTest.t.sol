@@ -36,6 +36,7 @@ modifier raffleEntered() {
     _;
 }
 
+
     function setUp() external {
         DeployRaffleScript deployer = new DeployRaffleScript();
         (raffle, helperConfig) = deployer.deployContract();
@@ -170,7 +171,7 @@ modifier raffleEntered() {
         bytes32 requestId = entries[1].topics[1];
         console.log("requestId:", uint256(requestId));
         console.log("vrfCoordinator:", vrfCoordinator);
-        console.log("subId:",subscriptionId);
+        console.log("suBId");
 
         VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(raffle));
         
