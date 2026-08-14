@@ -37,7 +37,7 @@ modifier raffleEntered() {
 }
 
 modifier skipForking() {
-    if(block.chainid == LOCAL_CHAIN_ID){
+    if(block.chainid != LOCAL_CHAIN_ID){
         return;
     }
     _;

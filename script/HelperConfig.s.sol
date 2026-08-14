@@ -55,9 +55,12 @@ contract HelperConfig is VariableConstants, Script {
             gaslane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
             callbackGasLimit: 500000,
             link: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
-            account: 0x57e6eFbFe85a3fD51934d76e23cf217B7f81b5a1
+            account: msg.sender
         });
     }
+
+    //0x760C449cA949709edf39f8fFC5A77a69B357d531
+    //
 
     function getLocalChainConfig() public returns (NetworkConfig memory) {
         if (localNetworkConfig.vrfCoordinator != address(0)) {

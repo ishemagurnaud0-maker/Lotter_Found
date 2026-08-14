@@ -10,6 +10,7 @@ import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 contract SubscriptionManager is Script {
 
 function createSubscription(address vrfCoordinator,address account) public returns(uint256 subId){
+    console.log("Helper Config account:", account);
     vm.startBroadcast(account);
     subId = VRFCoordinatorV2_5Mock(vrfCoordinator).createSubscription();
     vm.stopBroadcast();
@@ -39,6 +40,7 @@ contract FundSubscription is Script {
         }
     }
 
+
     function run(uint256 subId, address vrfCoordinator, address link, address account) external {
         fundSubscription(subId, vrfCoordinator, link, account);
     }
@@ -53,6 +55,7 @@ contract AddConsumer is Script {
     function addConsumer(uint256 subId, address consumerAddress, address vrfCoordinator) public {
          
          ( ,,, address owner,) = VRFCoordinatorV2_5Mock(vrfCoordinator).getSubscription(subId);
+         console.log("subscription owner:",owner);
          vm.startBroadcast(owner);
          VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(subId, consumerAddress);
          vm.stopBroadcast();

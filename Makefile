@@ -1,7 +1,11 @@
 -include .env
 
 build:; forge build
-anvil_deploy:; forge script script/Counter.s.sol:CounterScript --rpc-url http://127.0.0.1:8545 --private-key -- --broadcast -vvvv
-sepolia_deploy:; forge script script/Counter.s.sol:CounterScript --rpc-url $(SEPOLIA_RPC_URL) --account deployer --broadcast -vvvv
-test:; forge test --match-contract CounterTest 
+anvil_deploy: 
+			cast rpc anvil_mine --rpc-url http://127.0.0.1:8545
+			forge script script/DeployRaffle.s.sol:DeployRaffleScript --rpc-url http://127.0.0.1:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --sender 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --broadcast -vvvv
+sepolia_deploy:; forge script script/DeployRaffle.s.sol:DeployRaffleScript --rpc-url $(SEPOLIA_RPC_URL) --account deployer --broadcast -vvvv
+test:; forge test --match-contract RaffleTest 
 snap:; forge snapshot
+
+
