@@ -46,7 +46,7 @@ contract HelperConfig is VariableConstants, Script {
         }
     }
 
-    function getSepoliaETHConfig() public pure returns (NetworkConfig memory) {
+    function getSepoliaETHConfig() public view returns (NetworkConfig memory) {
         return NetworkConfig({
             entranceFee: 0.01 ether,
             lotteryTimeInterval: 30,

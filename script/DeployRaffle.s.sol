@@ -3,12 +3,15 @@ pragma solidity ^0.8.30;
 
 import {Script, console} from "forge-std/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
-import {HelperConfig} from "./HelperConfig.s.sol";
+import {HelperConfig, VariableConstants} from "./HelperConfig.s.sol";
 import {SubscriptionManager, FundSubscription, AddConsumer} from "./Interactions.s.sol";
 
 
-contract DeployRaffleScript is Script {
+contract DeployRaffleScript is Script, VariableConstants {
     function deployContract() public returns (Raffle, HelperConfig) {
+        if(block.chainid == LOCAL_CHAIN_ID) {
+            vm.roll(block.number + 1);
+        }
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
 
